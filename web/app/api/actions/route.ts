@@ -1,11 +1,17 @@
-import { ActionGetResponse, ActionPostRequest, ActionPostResponse, ACTIONS_CORS_HEADERS } from "@solana/actions";
+import {
+  ActionGetResponse,
+  ActionPostRequest,
+  ActionPostResponse,
+  ACTIONS_CORS_HEADERS
+}
+  from "@solana/actions";
 
 let secretWord = "APPLE";
 let tries = [];
 
 export async function GET(request: Request) {
   let statusMessage = "Adivina la palabra. Tienes 5 intentos.";
-  
+
   if (tries.length >= 5) {
     statusMessage = "Juego terminado. La palabra era " + secretWord + ".";
   }
@@ -62,7 +68,7 @@ export async function POST(request: Request) {
   const requestBody: ActionPostRequest<MyActionData> = await request.json();
 
   // Ahora podemos acceder a 'word' sin errores de tipado
-  const userWord = (String(requestBody.data?.word || '' )).toUpperCase()
+  const userWord = (String(requestBody.data?.word || '')).toUpperCase()
 
   if (!userWord || userWord.length !== 5) {
     return Response.json({
