@@ -19,7 +19,7 @@ export const GET = async (req: Request) => {
     const payload: ActionGetResponse = {
         icon: new URL("/image/lottery.jpg", new URL(req.url).origin).toString(),
         label: "Join the SOL Lottery",
-        description: "Try your luck! Buy a ticket for a chance to win the prize pool!",
+        description: "Take a chance! Buy a ticket for just 0.01 SOL and stand a chance to win the daily prize pool! ",
         title: "SOL Lottery",
         links: {
             actions: [
@@ -72,7 +72,7 @@ export const POST = async (req: Request) => {
 
         const totalAmount = ticketPrice * ticketCount;
 
-        const connection = new Connection(clusterApiUrl("devnet"));
+        const connection = new Connection(clusterApiUrl("mainnet-beta"));
         const TO_PUBKEY = new PublicKey("H63JMEasVRLEFaDAhfVQGpVBsRaGEkzH6CnGBNrFQsJK");
 
         const transaction = new Transaction().add(
