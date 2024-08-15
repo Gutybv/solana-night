@@ -1,63 +1,123 @@
-import { ActionGetResponse, ActionPostRequest, ActionPostResponse, ACTIONS_CORS_HEADERS, createPostResponse } from "@solana/actions";
-import { clusterApiUrl, LAMPORTS_PER_SOL, PublicKey, SystemProgram, Transaction, Connection } from "@solana/web3.js";
-
-export const GET = async (req: Request) => {
+import {
+    ActionGetResponse,
+    ACTIONS_CORS_HEADERS,
+    ActionPostRequest,
+    createPostResponse,
+    ActionPostResponse,
+  } from "@solana/actions";
+  import {
+    clusterApiUrl,
+    Connection,
+    LAMPORTS_PER_SOL,
+    PublicKey,
+    SystemProgram,
+    Transaction,
+  } from "@solana/web3.js";
+  
+  export const GET = async (req: Request) => {
     const payload: ActionGetResponse = {
-        icon: new URL("/image/eye.jpg", new URL(req.url).origin).toString(),
-        label: "DONATE",
-        description: "buy me a coffe",
-        title: "Gilberts coffe donation"
+      icon: new URL("/image/eye.jpg", new URL(req.url).origin).toString(),
+      label: "Buy me a coffee",
+      description:
+        "Buy me a coffee with SOL using this super sweet blink of mine :)",
+      title: "Buy Me a Coffee",
+      links: {
+        actions: [
+          {
+            href: "/api/actions/donate?amount=0.1",
+            label: "0.1 SOL",
+          },
+          {
+            href: "/api/actions/donate?amount=0.5",
+            label: "0.5 SOL",
+          },
+          {
+            href: "/api/actions/donate?amount=1.0",
+            label: "1.0 SOL",
+          },
+          {
+            href: "/api/actions/donate?amount={amount}",
+            label: "Send SOL", // button text
+            parameters: [
+              {
+                name: "amount", // name template literal
+                label: "Enter a SOL amount", // placeholder for the input
+              },
+            ],
+          },
+        ],
+      },
     };
-
-    return Response.json(payload, { headers: ACTIONS_CORS_HEADERS });
-
-}
-
-export const OPTIONS = GET;
+  
+    return Response.json(payload, {
+      headers: ACTIONS_CORS_HEADERS,
+    });
+  };
+  
+  export const OPTIONS = GET;
 
 export const POST = async (req: Request) => {
     try {
-        const body: ActionPostRequest = await req.json();
-
-        let account: PublicKey;
-
+      const url = new URL(req.url);
+  
+      const body: ActionPostRequest = await req.json();
+  
+      let account: PublicKey;
+      try {
+        account = new PublicKey(body.account);
+      } catch (err) {
+        throw "Invalid 'account' provided. Its not a real pubkey";
+      }
+  
+      let amount: number = 0.1;
+  
+      if (url.searchParams.has("amount")) {
         try {
-            account = new PublicKey(body.account)
-        } catch (error) {
-            throw "Invalid 'account' provided";
+          amount = parseFloat(url.searchParams.get("amount") || "0.1") || amount;
+        } catch (err) {
+          throw "Invalid 'amount' input";
         }
-
-        const connection = new Connection(clusterApiUrl("devnet"));
-        const PUB_KEY = new PublicKey("96UTCU5CtskDT2DYVVkMbKxRRDveSPPiB8jX1nrD1Pws")
-
-        const transaction = new Transaction().add(
-            SystemProgram.transfer({
-                fromPubkey: account,
-                lamports: 0.01 * LAMPORTS_PER_SOL,
-                toPubkey: PUB_KEY,
-            })
-        )
-        transaction.feePayer = account;
-        transaction.recentBlockhash = (await connection.getLatestBlockhash()).blockhash;
-
-
-        const payload: ActionPostResponse = await createPostResponse({
-            fields: {
-                transaction,
-                message: "Transaction created"
-            }
-        });
-
-        return Response.json(payload, {
-            headers: ACTIONS_CORS_HEADERS,
-          });
-
-    } catch (error) {
-        let message = "Error processing request";
-        if (typeof error === "string") {
-            message = error;
-        }
-
-        return Response.json({ message: "" }, { headers: ACTIONS_CORS_HEADERS });
+      }
+  
+      const connection = new Connection(clusterApiUrl("devnet"));
+  
+      const TO_PUBKEY = new PublicKey(
+        "9FK3BZiGatVrDwVZoMZsJQW24ETAmmzBAGPnJp9jSdtu",
+      );
+  
+      const transaction = new Transaction().add(
+        SystemProgram.transfer({
+          fromPubkey: account,
+          lamports: amount * LAMPORTS_PER_SOL,
+          toPubkey: TO_PUBKEY,
+        }),
+      );
+      transaction.feePayer = account;
+      transaction.recentBlockhash = (
+        await connection.getLatestBlockhash()
+      ).blockhash;
+  
+      const payload: ActionPostResponse = await createPostResponse({
+        fields: {
+          transaction,
+          message: "Thanks for the coffee fren :)",
+        },
+      });
+  
+      return Response.json(payload, {
+        headers: ACTIONS_CORS_HEADERS,
+      });
+    } catch (err) {
+      let message = "An unknown error occurred";
+      if (typeof err == "string") message = err;
+  
+      return Response.json(
+        {
+          message,
+        },
+        {
+          headers: ACTIONS_CORS_HEADERS,
+        },
+      );
     }
-}
+  };
