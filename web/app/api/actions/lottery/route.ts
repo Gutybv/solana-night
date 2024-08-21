@@ -39,6 +39,7 @@ export const GET = async (req: Request) => {
                 },
             ],
         },
+        type: "action"
     };
 
     return Response.json(payload, {

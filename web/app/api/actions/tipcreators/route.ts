@@ -16,23 +16,33 @@ import {
 
 export const GET = async (req: Request) => {
   const payload: ActionGetResponse = {
-    icon: new URL("/image/tip.jpeg", new URL(req.url).origin).toString(),
+    icon: new URL("/image/eye.jpg", new URL(req.url).origin).toString(),
     label: "Buy me a coffee",
-    description: "Give a tip on SOL if you liked the content :)",
-    title: "Tip Creator",
+    description: "Buy me a coffee with SOL using this super sweet blink of mine :)",
+    title: "Buy Me a Coffee",
     links: {
       actions: [
         {
           href: "/api/actions/donate?amount=0.1",
-          label: "0.01 SOL",
+          label: "0.1 SOL",
         },
         {
           href: "/api/actions/donate?amount=0.5",
-          label: "0.05 SOL",
+          label: "0.5 SOL",
         },
         {
           href: "/api/actions/donate?amount=1.0",
-          label: "0.1 SOL",
+          label: "1.0 SOL",
+        },
+        {
+          href: "/api/actions/donate?amount={amount}",
+          label: "Send SOL", // button text
+          parameters: [
+            {
+              name: "amount", // name template literal
+              label: "Enter a SOL amount", // placeholder for the input
+            },
+          ],
         },
       ],
     },
@@ -72,7 +82,7 @@ export const POST = async (req: Request) => {
     const connection = new Connection(clusterApiUrl("devnet"));
 
     const TO_PUBKEY = new PublicKey(
-      "GZ7wDH9KDv7JsAj9zHtKcrKYUsxMMwo7Qkwe5z9nXN37",
+      "9FK3BZiGatVrDwVZoMZsJQW24ETAmmzBAGPnJp9jSdtu",
     );
 
     const transaction = new Transaction().add(
@@ -90,7 +100,7 @@ export const POST = async (req: Request) => {
     const payload: ActionPostResponse = await createPostResponse({
       fields: {
         transaction,
-        message: "Thanks for supporting :)",
+        message: "Thanks for the coffee fren :)",
       },
     });
 
