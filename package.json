@@ -21,6 +21,7 @@
     "@tanstack/react-query-next-experimental": "5.40.0",
     "bs58": "5.0.0",
     "buffer": "6.0.3",
+    "cors": "^2.8.5",
     "daisyui": "4.11.1",
     "encoding": "0.1.13",
     "jotai": "2.8.3",
