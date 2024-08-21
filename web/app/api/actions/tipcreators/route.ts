@@ -18,8 +18,7 @@ export const GET = async (req: Request) => {
   const payload: ActionGetResponse = {
     icon: new URL("/image/tip.jpeg", new URL(req.url).origin).toString(),
     label: "Buy me a coffee",
-    description:
-      "Give a tip on SOL if you liked the content :)",
+    description: "Give a tip on SOL if you liked the content :)",
     title: "Tip Creator",
     links: {
       actions: [
@@ -37,6 +36,7 @@ export const GET = async (req: Request) => {
         },
       ],
     },
+    type: "action"
   };
 
   return Response.json(payload, {
