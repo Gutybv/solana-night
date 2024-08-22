@@ -24,9 +24,17 @@ export const GET = async (req: Request) => {
         links: {
             actions: [
                 {
-                    href: "/api/actions/lottery?amount=0.1",
+                    href: "/api/actions/tipping?amount=0.1",
                     label: "Tip 0.01 SOL",
-                },        
+                },       
+                {
+                    href: "/api/actions/tipping?amount=0.5",
+                    label: "Tip 0.05 SOL",
+                },  
+                {
+                    href: "/api/actions/tipping?amount=0.1",
+                    label: "Tip 0.1 SOL",
+                },   
             ],
         },
         type: "action"
