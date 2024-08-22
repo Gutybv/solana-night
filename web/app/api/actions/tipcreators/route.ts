@@ -18,8 +18,7 @@ export const GET = async (req: Request) => {
   const payload: ActionGetResponse = {
     icon: new URL("/image/eye.jpg", new URL(req.url).origin).toString(),
     label: "Buy me a coffee",
-    description:
-      "Buy me a coffee with SOL using this super sweet blink of mine :)",
+    description: "Buy me a coffee with SOL using this super sweet blink of mine :)",
     title: "Buy Me a Coffee",
     links: {
       actions: [
@@ -47,6 +46,7 @@ export const GET = async (req: Request) => {
         },
       ],
     },
+    type: "action"
   };
 
   return Response.json(payload, {
