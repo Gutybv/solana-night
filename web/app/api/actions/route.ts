@@ -1,108 +1,113 @@
 import {
   ActionGetResponse,
+  ACTIONS_CORS_HEADERS,
   ActionPostRequest,
+  createPostResponse,
   ActionPostResponse,
-  ACTIONS_CORS_HEADERS
-}
-  from "@solana/actions";
+} from "@solana/actions";
+import {
+  clusterApiUrl,
+  Connection,
+  LAMPORTS_PER_SOL,
+  PublicKey,
+  SystemProgram,
+  Transaction,
+} from "@solana/web3.js";
 
-let secretWord = "APPLE";
-let tries = [];
-
-export async function GET(request: Request) {
-  let statusMessage = "Adivina la palabra. Tienes 5 intentos.";
-
-  if (tries.length >= 5) {
-    statusMessage = "Juego terminado. La palabra era " + secretWord + ".";
-  }
-
-  const responseBody: ActionGetResponse = {
-    icon: "https://solana.com/_next/static/media/logotype.e4df684f.svg",
-    description: statusMessage,
-    title: "Wordle en Solana",
-    label: "click me",
+export const GET = async (req: Request) => {
+  const payload: ActionGetResponse = {
+    icon: new URL("/image/tip.jpeg", new URL(req.url).origin).toString(),
+    label: "Tip Creator",
+    description: "Tip some SOL if you liked the content",
+    title: "Tip the Creator",
     links: {
       actions: [
         {
-          href: request.url,
-          label: 'Intento 1'
+          href: "/api/actions/donate?amount=0.1",
+          label: "0.01 SOL",
         },
         {
-          href: request.url,
-          label: 'Intento 2'
+          href: "/api/actions/donate?amount=0.5",
+          label: "0.05 SOL",
         },
         {
-          href: request.url,
-          label: 'Intento 3'
+          href: "/api/actions/donate?amount=1.0",
+          label: "0.1 SOL",
         },
-        {
-          href: request.url,
-          label: 'Intento 4'
-        },
-        {
-          href: request.url,
-          label: 'Intento 5',
-          parameters: [
-            {
-              name: "word",
-              label: "Introduce tu palabra",
-              required: true
-            }
-          ]
-        }
-      ]
+      ],
     },
-    error: { message: "Este blink aún no está implementado." },
     type: "action"
   };
-  const response = Response.json(responseBody, { headers: ACTIONS_CORS_HEADERS });
 
-  return response;
-}
+  return Response.json(payload, {
+    headers: ACTIONS_CORS_HEADERS,
+  });
+};
 
-interface MyActionData {
-  word: string;
-}
+export const OPTIONS = GET;
 
-export async function POST(request: Request) {
-  // Usamos la interfaz MyActionData para tipar correctamente la data
-  const requestBody: ActionPostRequest<MyActionData> = await request.json();
+export const POST = async (req: Request) => {
+  try {
+    const url = new URL(req.url);
 
-  // Ahora podemos acceder a 'word' sin errores de tipado
-  const userWord = (String(requestBody.data?.word || '')).toUpperCase()
+    const body: ActionPostRequest = await req.json();
 
-  if (!userWord || userWord.length !== 5) {
-    return Response.json({
-      message: "La palabra debe tener 5 letras"
-    }, { headers: ACTIONS_CORS_HEADERS });
-  }
-
-  // Procesar la palabra del usuario
-  const result = Array(5).fill("incorrect");
-
-  for (let i = 0; i < 5; i++) {
-    if (userWord[i] === secretWord[i]) {
-      result[i] = "correct";
-    } else if (secretWord.includes(userWord[i])) {
-      result[i] = "present";
+    let account: PublicKey;
+    try {
+      account = new PublicKey(body.account);
+    } catch (err) {
+      throw "Invalid 'account' provided. Its not a real pubkey";
     }
+
+    let amount: number = 0.1;
+
+    if (url.searchParams.has("amount")) {
+      try {
+        amount = parseFloat(url.searchParams.get("amount") || "0.1") || amount;
+      } catch (err) {
+        throw "Invalid 'amount' input";
+      }
+    }
+
+    const connection = new Connection(clusterApiUrl("devnet"));
+
+    const TO_PUBKEY = new PublicKey(
+      "GZ7wDH9KDv7JsAj9zHtKcrKYUsxMMwo7Qkwe5z9nXN37",
+    );
+
+    const transaction = new Transaction().add(
+      SystemProgram.transfer({
+        fromPubkey: account,
+        lamports: amount * LAMPORTS_PER_SOL,
+        toPubkey: TO_PUBKEY,
+      }),
+    );
+    transaction.feePayer = account;
+    transaction.recentBlockhash = (
+      await connection.getLatestBlockhash()
+    ).blockhash;
+
+    const payload: ActionPostResponse = await createPostResponse({
+      fields: {
+        transaction,
+        message: "Thanks for supporting :)",
+      },
+    });
+
+    return Response.json(payload, {
+      headers: ACTIONS_CORS_HEADERS,
+    });
+  } catch (err) {
+    let message = "An unknown error occurred";
+    if (typeof err == "string") message = err;
+
+    return Response.json(
+      {
+        message,
+      },
+      {
+        headers: ACTIONS_CORS_HEADERS,
+      },
+    );
   }
-
-  tries.push({ word: userWord, result });
-
-  let message = "Resultado: " + result.join(", ");
-  if (userWord === secretWord) {
-    message = "¡Felicidades! Has adivinado la palabra.";
-    tries = [];
-  } else if (tries.length >= 5) {
-    message = "Lo siento, no has adivinado la palabra. Era: " + secretWord;
-    tries = [];
-  }
-
-  const response: ActionPostResponse = {
-    transaction: '',  // Aquí deberías manejar la transacción según tu lógica
-    message
-  };
-
-  return Response.json(response, { headers: ACTIONS_CORS_HEADERS });
-}
+};
