@@ -52,7 +52,8 @@ export async function GET(request: Request) {
         }
       ]
     },
-    error: { message: "Este blink aún no está implementado." }
+    error: { message: "Este blink aún no está implementado." },
+        type: "action"
   };
   const response = Response.json(responseBody, { headers: ACTIONS_CORS_HEADERS });
 

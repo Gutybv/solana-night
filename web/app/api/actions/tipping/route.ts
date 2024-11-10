@@ -17,28 +17,27 @@ import {
 // GET Request - Show Lottery Details
 export const GET = async (req: Request) => {
     const payload: ActionGetResponse = {
-        icon: new URL("/image/lottery.jpg", new URL(req.url).origin).toString(),
-        label: "Join the SOL Lottery",
-        description: "Take a chance! Buy a ticket for just 0.01 SOL and stand a chance to win the daily prize pool! ",
-        title: "SOL Lottery",
+        icon: new URL("/image/tip.jpeg", new URL(req.url).origin).toString(),
+        label: "Tip",
+        description: "Support the creator if you like the content! ",
+        title: "Tip Creator",
         links: {
             actions: [
                 {
-                    href: "/api/actions/lottery?amount=0.1",
-                    label: "Buy a Ticket (0.1 SOL)",
-                },
+                    href: "/api/actions/tipping?amount=0.1",
+                    label: "Tip 0.01 SOL",
+                },       
                 {
-                    href: "/api/actions/lottery?amount={amount}",
-                    label: "Buy Multiple Tickets",
-                    parameters: [
-                        {
-                            name: "amount",
-                            label: "Enter Number of Tickets",
-                        },
-                    ],
-                },
+                    href: "/api/actions/tipping?amount=0.5",
+                    label: "Tip 0.05 SOL",
+                },  
+                {
+                    href: "/api/actions/tipping?amount=0.1",
+                    label: "Tip 0.1 SOL",
+                },   
             ],
         },
+        type: "action"
     };
 
     return Response.json(payload, {
@@ -73,7 +72,7 @@ export const POST = async (req: Request) => {
         const totalAmount = ticketPrice * ticketCount;
 
         const connection = new Connection(clusterApiUrl("mainnet-beta"));
-        const TO_PUBKEY = new PublicKey("H63JMEasVRLEFaDAhfVQGpVBsRaGEkzH6CnGBNrFQsJK");
+        const TO_PUBKEY = new PublicKey("GZ7wDH9KDv7JsAj9zHtKcrKYUsxMMwo7Qkwe5z9nXN37");
 
         const transaction = new Transaction().add(
             SystemProgram.transfer({
@@ -89,7 +88,7 @@ export const POST = async (req: Request) => {
         const payload: ActionPostResponse = await createPostResponse({
             fields: {
                 transaction,
-                message: `You have bought ${ticketCount} ticket(s)! Good luck!`,
+                message: `Thanks for supporting :)!`,
             },
         });
 
